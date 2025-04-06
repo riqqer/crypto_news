@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto News</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto News</h1>
+        
+        <!-- Form for user to enter the cryptocurrency symbol -->
+        <form id="searchForm">
+            <input type="text" id="cryptoSymbol" placeholder="Enter crypto symbol (e.g., BTC)" required>
+            <button type="submit">Get News</button>
+        </form>
+
+        <!-- Container to display the fetched news -->
+        <div id="newsContainer" class="news-container">
+            <!-- News articles will appear here -->
+        </div>
+    </div>
+
+    <script>
+        // This function fetches the news based on the cryptocurrency symbol
+        async function fetchNews(symbol) {
+            try {
+                const response = await fetch(`/api/news?symbol=${symbol}`);
+                const news = await response.json();
+
+                // Get the container element to display news
+                const newsContainer = document.getElementById('newsContainer');
+                newsContainer.innerHTML = '';  // Clear previous news
+
+                // If news exists, display it
+                if (news.length > 0) {
+                    news.forEach(article => {
+                        const articleElement = document.createElement('div');
+                        articleElement.classList.add('news-article');
+                        articleElement.innerHTML = `
+                            <h2><a href="${article.url}" target="_blank">${article.title}</a></h2>
+                            <p><strong>Source:</strong> ${article.source}</p>
+                            <p><strong>Published:</strong> ${article.published_at}</p>
+                        `;
+                        newsContainer.appendChild(articleElement);
+                    });
+                } else {
+                    newsContainer.innerHTML = '<p>No news found for this symbol.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching news:', error);
+                document.getElementById('newsContainer').innerHTML = '<p>Error loading news. Please try again later.</p>';
+            }
+        }
+
+        // Event listener for the search form
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent form from reloading the page
+            const symbol = document.getElementById('cryptoSymbol').value.trim().toUpperCase();  // Get the symbol entered by the user
+            if (symbol) {
+                fetchNews(symbol);  // Fetch news based on the entered symbol
+            }
+        });
+
+        // Optional: Fetch some default news (e.g., Bitcoin) when the page loads
+        window.onload = function() {
+            fetchNews('');
+        };
+    </script>
+</body>
+</html>
